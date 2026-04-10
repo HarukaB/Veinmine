@@ -1,0 +1,45 @@
+package top.diaoyugan.veinmine.config;
+
+import java.util.HashSet;
+import java.util.Set;
+
+public class ConfigItems {
+    private final int version = 1;
+
+    public boolean useIntrusiveCode = true;
+    public int searchRadius = 1;
+    public int BFSLimit = 50;
+    public Set<String> ignoredBlocks = new HashSet<>();
+    public boolean useBFS = true;
+    public boolean useRadiusSearch = true;
+    public boolean useRadiusSearchWhenReachBFSLimit = true;
+    public boolean highlightBlocksMessage = true;
+    public boolean protectTools = true;
+    public Set<String> protectedTools = new HashSet<>();
+    public int durabilityThreshold = 10;
+    public boolean protectAllDefaultValuableTools = true;
+    public boolean enableHighlights = true;
+    public int red = 255;
+    public int green = 255;
+    public int blue = 255;
+    public int alpha = 255;
+    public boolean useHoldInsteadOfToggle = false;
+
+    public final Set<String> defaultProtectedTools = Set.of(
+            "minecraft:golden_pickaxe",
+            "minecraft:golden_axe",
+            "minecraft:golden_shovel",
+            "minecraft:golden_sword",
+            "minecraft:golden_hoe",
+            "minecraft:diamond_pickaxe",
+            "minecraft:diamond_axe",
+            "minecraft:diamond_shovel",
+            "minecraft:diamond_sword",
+            "minecraft:diamond_hoe",
+            "minecraft:netherite_pickaxe",
+            "minecraft:netherite_axe",
+            "minecraft:netherite_shovel",
+            "minecraft:netherite_sword",
+            "minecraft:netherite_hoe"
+    );
+}

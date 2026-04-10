@@ -1,0 +1,118 @@
+buildscript {
+    repositories {
+        maven { url = 'https://maven.fabricmc.net/' }
+        gradlePluginPortal()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'net.fabricmc:fabric-loom:1.4-SNAPSHOT'
+    }
+}
+
+apply plugin: 'java-library'
+apply plugin: 'fabric-loom'
+
+loom {
+    accessWidenerPath = project(':common-1.20').file("src/main/resources/vein_mine.accesswidener")
+}
+
+base {
+    archivesName = "${mod_name}-fabric-1.20-${mc_1_20_version}"
+}
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(java_version_1_20)
+    withSourcesJar()
+}
+
+repositories {
+    maven {
+        name = "Terraformers"
+        url = "https://maven.terraformersmc.com/"
+    }
+}
+
+configurations {
+    commonJava {
+        canBeResolved = true
+    }
+    commonResources {
+        canBeResolved = true
+    }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${mc_1_20_version}"
+    mappings loom.officialMojangMappings()
+    modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version_1_20}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version_1_20}"
+    modImplementation "com.terraformersmc:modmenu:${modmenu_version_1_20}"
+
+    compileOnly(project(':common-1.20'))
+    commonJava project(path: ':common-1.20', configuration: 'commonJava')
+    commonResources project(path: ':common-1.20', configuration: 'commonResources')
+}
+
+tasks.named('compileJava', JavaCompile) {
+    dependsOn(configurations.commonJava)
+    source(configurations.commonJava)
+}
+
+processResources {
+    dependsOn(configurations.commonResources)
+    from(configurations.commonResources)
+
+    var expandProps = ['version'              : version,
+                       'minecraft_version'    : mc_1_20_version,
+                       'fabric_version'       : fabric_version_1_20,
+                       'fabric_loader_version': fabric_loader_version_1_20,
+                       'mod_name'             : mod_name,
+                       'mod_id'               : mod_id,
+                       'license'              : license,
+                       'java_version'         : java_version_1_20,
+                       'fabric_minecraft_version': mc_1_20_version]
+
+    filesMatching(['pack.mcmeta', 'fabric.mod.json', '*.mixins.json']) {
+        expand expandProps
+    }
+    inputs.properties(expandProps)
+}
+
+tasks.named('sourcesJar', Jar) {
+    dependsOn(configurations.commonJava)
+    from(configurations.commonJava)
+    dependsOn(configurations.commonResources)
+    from(configurations.commonResources)
+}
+
+sourcesJar {
+    from(rootProject.file('LICENSE')) {}
+}
+
+jar {
+    from(rootProject.file('LICENSE')) {}
+    manifest {
+        attributes(['Specification-Title'   : mod_name,
+                    'Specification-Version' : project.jar.archiveVersion,
+                    'Implementation-Title'  : project.name,
+                    'Implementation-Version': project.jar.archiveVersion,
+                    'Built-On-Minecraft'    : mc_1_20_version])
+    }
+}
+
+loom {
+    runs {
+        client {
+            client()
+            setConfigName('Fabric 1.20 Client')
+            ideConfigGenerated(true)
+            runDir('runs/client-1.20')
+        }
+        server {
+            server()
+            setConfigName('Fabric 1.20 Server')
+            ideConfigGenerated(true)
+            runDir('runs/server-1.20')
+        }
+    }
+}
