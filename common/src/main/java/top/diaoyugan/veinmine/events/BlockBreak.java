@@ -3,19 +3,26 @@ package top.diaoyugan.veinmine.events;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import top.diaoyugan.veinmine.Constants;
 import top.diaoyugan.veinmine.config.ConfigItems;
 import top.diaoyugan.veinmine.utils.Messages;
 import top.diaoyugan.veinmine.utils.SmartVein;
@@ -27,8 +34,13 @@ import static top.diaoyugan.veinmine.utils.Utils.*;
 
 public class BlockBreak {
 
+    private static final ResourceKey<Enchantment> VEINMINE_ENCHANTMENT_KEY = ResourceKey.create(
+            Registries.ENCHANTMENT,
+            Identifier.fromNamespaceAndPath(Constants.ID, "veinmine")
+    );
+
     public static void onBlockBreak(Level world, Player player, BlockPos pos, BlockState state, BlockEntity entity) {
-        if (!getVeinMineSwitchState(player)) return; // 玩家未开启连锁采集，直接返回
+        if (!getVeinMineSwitchState(player) && !hasVeinmineEnchantment(world, player)) return; // 玩家未开启连锁采集且工具无附魔，直接返回
 
         List<BlockPos> blocks = SmartVein.findBlocks(world, pos, BuiltInRegistries.BLOCK.getKey(state.getBlock()));
         if (blocks == null || blocks.isEmpty()) return; // 没有找到连锁方块
@@ -43,6 +55,16 @@ public class BlockBreak {
         }
 
         Utils.applyToolDurabilityDamage(player, destroyed); // 扣除耐久
+    }
+
+    private static boolean hasVeinmineEnchantment(Level world, Player player) {
+        ItemStack tool = player.getMainHandItem();
+        if (tool.isEmpty()) return false;
+        return world.registryAccess()
+                .lookup(Registries.ENCHANTMENT)
+                .flatMap(registry -> registry.get(VEINMINE_ENCHANTMENT_KEY))
+                .map(holder -> EnchantmentHelper.getItemEnchantmentLevel(holder, tool) > 0)
+                .orElse(false);
     }
 
     private static boolean checkDurabilityAndWarn(Player player, BlockState state, List<BlockPos> blocks) {

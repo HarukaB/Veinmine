@@ -91,5 +91,8 @@
   "vm.config.screen.reset.tooltip": "Reset all configs to default and exit config screen",
 
   "vm.command.reload": "VeinMine config reloaded",
-  "vm.command.reload_failed":"An error occurred when reloading config. See Console for details"
+  "vm.command.reload_failed":"An error occurred when reloading config. See Console for details",
+
+  "enchantment.vein_mine.veinmine": "Vein Mine",
+  "enchantment.vein_mine.veinmine.desc": "Automatically activates vein mining when breaking blocks"
 }
